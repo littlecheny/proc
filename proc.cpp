@@ -2245,6 +2245,17 @@ void ProcLockWakeup(LockMethod lockMethodTable, LOCK* lock, const PROCLOCK* proc
 
     while (queue_size-- > 0) {
         int status = STATUS_OK;
+
+        int numa_node = proc->nodeno;
+
+        if(numa_node != -1){
+#ifdef __USE_NUMA
+            if(numa_run_on_node(numa_node) != 0){
+                ereport(LOG,(errmsg("Failed to bind process to NUMA node %d", numa_node)));
+            }
+#endif
+        }
+
         LOCKMODE lockmode = proc->waitLockMode;
         PROCLOCK* oldBlockProcLock = proc->blockProcLock;
 
